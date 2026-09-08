@@ -1,0 +1,123 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Design system — "Warm Frosted Console".
+ * Warm sand background, single terracotta accent, Instrument Serif headings,
+ * Inter body. All colors in oklch and mapped to Tailwind utilities below.
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-surface: var(--success-surface);
+  --color-brand: var(--brand);
+  --color-brand-soft: var(--brand-soft);
+  --color-ink: var(--ink);
+  --color-mist: var(--mist);
+  --color-glow: var(--glow);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-serif: "Instrument Serif", Georgia, serif;
+  --shadow-frost: 0 30px 60px -30px oklch(0.42 0.06 55 / 0.35);
+  --shadow-frost-inset: inset 0 2px 0 oklch(1 0 0 / 0.6);
+}
+
+:root {
+  --radius: 0.625rem;
+  --background: oklch(0.964 0.014 71);
+  --foreground: oklch(0.216 0.006 56);
+  --ink: oklch(0.216 0.006 56);
+  --mist: oklch(0.962 0.013 74);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.216 0.006 56);
+  --primary: oklch(0.512 0.176 39.9);
+  --primary-foreground: oklch(0.995 0 0);
+  --brand: oklch(0.512 0.176 39.9);
+  --brand-soft: oklch(0.598 0.191 41.5);
+  --secondary: oklch(0.94 0.012 74);
+  --secondary-foreground: oklch(0.3 0.008 56);
+  --muted: oklch(0.94 0.012 74);
+  --muted-foreground: oklch(0.5 0.01 60);
+  --accent: oklch(0.93 0.02 74);
+  --accent-foreground: oklch(0.26 0.008 56);
+  --destructive: oklch(0.512 0.176 39.9);
+  --destructive-foreground: oklch(0.995 0 0);
+  --success: oklch(0.545 0.113 163);
+  --success-foreground: oklch(0.34 0.07 163);
+  --success-surface: oklch(0.96 0.03 163);
+  --glow: oklch(0.83 0.13 84);
+  --border: oklch(0.216 0.006 56 / 0.1);
+  --input: oklch(0.216 0.006 56 / 0.08);
+  --ring: oklch(0.512 0.176 39.9);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    font-family: var(--font-sans);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    -webkit-font-smoothing: antialiased;
+  }
+}
+
+@utility page-warmth {
+  background: radial-gradient(
+    130% 90% at 12% 0%,
+    oklch(0.976 0.011 71) 0%,
+    oklch(0.945 0.02 74) 45%,
+    oklch(0.916 0.028 71) 100%
+  );
+}
+
+@utility frost-card {
+  background-color: oklch(1 0 0 / 0.6);
+  backdrop-filter: blur(20px);
+  box-shadow: var(--shadow-frost), var(--shadow-frost-inset);
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@utility rise {
+  animation: fade-up 0.45s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
