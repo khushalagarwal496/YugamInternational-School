@@ -3,7 +3,7 @@
  */
 
 const NAME_RE = /^[A-Za-z\s]+$/;
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+const EMAIL_RE = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
 const DIGITS_ONLY_RE = /^\d+$/;
 const SPECIAL_CHAR_RE = /[^A-Za-z0-9]/g;
 
@@ -23,12 +23,36 @@ export function validateName(value: string | undefined | null): string | null {
 /**
  * Validates email address:
  * - Required
- * - Standard valid email format
+ * - Standard valid email format (e.g. user@example.com)
+ * - Detects common typos like gmail.co, gmail.con, gamil.com
  */
 export function validateEmail(value: string | undefined | null): string | null {
   const v = (value ?? "").trim();
   if (!v) return "Email is required.";
   if (!EMAIL_RE.test(v)) return "Please enter a valid email address.";
+
+  const parts = v.split("@");
+  if (parts.length === 2) {
+    const domain = parts[1].toLowerCase();
+    if (
+      domain === "gmail.co" ||
+      domain === "gmail.c" ||
+      domain === "gmail.con" ||
+      domain === "gmail.cm" ||
+      domain === "gamil.com" ||
+      domain === "gmai.com" ||
+      domain === "gmail.co.in.co"
+    ) {
+      return "Please enter a complete and valid email (e.g. name@gmail.com).";
+    }
+    if (domain === "yahoo.co" || domain === "yahoo.con" || domain === "yahoo.c") {
+      return "Please enter a valid email address (e.g. name@yahoo.com).";
+    }
+    if (domain === "outlook.co" || domain === "hotmail.co") {
+      return "Please enter a valid email address (e.g. name@outlook.com).";
+    }
+  }
+
   return null;
 }
 
@@ -72,7 +96,7 @@ export function validateUsername(value: string | undefined | null): string | nul
   const v = (value ?? "").trim();
   if (!v) return "Username is required.";
   if (/\s/.test(v)) return "Username cannot contain spaces.";
-  
+
   const specials = v.match(SPECIAL_CHAR_RE) ?? [];
   if (specials.length > 1) {
     return "Username can contain letters, numbers, and one special character.";
