@@ -9,14 +9,26 @@ import {
   type User,
 } from "firebase/auth";
 
+const defaultFallbackConfig = {
+  apiKey: "AIzaSyAnRRmMhTRuWu6xeMvgtiisi11r8la3Rt8",
+  authDomain: "assiement-d5073.firebaseapp.com",
+  projectId: "assiement-d5073",
+  storageBucket: "assiement-d5073.firebasestorage.app",
+  messagingSenderId: "859424635952",
+  appId: "1:859424635952:web:746cb8f8bd3fffb78e01f5",
+  measurementId: "G-KNWZXK1SSW",
+};
+
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID,
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || defaultFallbackConfig.apiKey,
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || defaultFallbackConfig.authDomain,
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || defaultFallbackConfig.projectId,
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || defaultFallbackConfig.storageBucket,
+  messagingSenderId:
+    import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || defaultFallbackConfig.messagingSenderId,
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || defaultFallbackConfig.appId,
+  measurementId:
+    import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || defaultFallbackConfig.measurementId,
 };
 
 let app: FirebaseApp | undefined;
@@ -26,26 +38,23 @@ let auth: Auth | undefined;
  * Initializes and returns Firebase Auth instance safely across SSR and Client environments.
  */
 export function getFirebaseAuth(): Auth {
-  if (typeof window === "undefined") {
-    // SSR fallback: avoid crashes on server
+  try {
     if (!app) {
-      app = !getApps().length
-        ? initializeApp(
-            firebaseConfig.apiKey ? firebaseConfig : { apiKey: "dummy-key-for-ssr", projectId: "dummy-project" },
-          )
-        : getApps()[0];
+      app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
     }
-    if (!auth) auth = getAuth(app);
-    return auth;
+    if (!auth && app) {
+      auth = getAuth(app);
+    }
+  } catch (error) {
+    console.error("Firebase initialization warning:", error);
+    if (!app) {
+      app = !getApps().length ? initializeApp(defaultFallbackConfig) : getApps()[0];
+    }
+    if (!auth && app) {
+      auth = getAuth(app);
+    }
   }
-
-  if (!app) {
-    app = !getApps().length ? initializeApp(firebaseConfig) : getApps()[0];
-  }
-  if (!auth) {
-    auth = getAuth(app);
-  }
-  return auth;
+  return auth!;
 }
 
 /**
@@ -75,7 +84,6 @@ export function getFriendlyFirebaseErrorMessage(error: unknown): string {
   }
 
   if (error instanceof Error && error.message) {
-    // Strip Firebase code prefixes if present in raw message
     return error.message.replace(/^Firebase:\s*/, "");
   }
 
@@ -110,6 +118,16 @@ export async function logoutFromFirebase(): Promise<void> {
  * Subscribes to Firebase Auth state changes.
  */
 export function subscribeToAuthState(callback: (user: User | null) => void): () => void {
-  const authInstance = getFirebaseAuth();
-  return onAuthStateChanged(authInstance, callback);
+  try {
+    const authInstance = getFirebaseAuth();
+    if (!authInstance) {
+      callback(null);
+      return () => {};
+    }
+    return onAuthStateChanged(authInstance, callback);
+  } catch (err) {
+    console.error("Firebase auth state subscription failed:", err);
+    callback(null);
+    return () => {};
+  }
 }

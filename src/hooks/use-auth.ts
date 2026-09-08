@@ -10,17 +10,26 @@ import { clearInMemorySession, readInMemorySession, saveInMemorySession } from "
 
 export function useAuth() {
   const [user, setUser] = useState<User | null>(() => {
-    if (typeof window === "undefined") return null;
-    return getFirebaseAuth().currentUser;
+    try {
+      if (typeof window === "undefined") return null;
+      return getFirebaseAuth()?.currentUser ?? null;
+    } catch {
+      return null;
+    }
   });
   const [loading, setLoading] = useState<boolean>(true);
 
   useEffect(() => {
-    const unsubscribe = subscribeToAuthState((currentUser) => {
-      setUser(currentUser);
+    try {
+      const unsubscribe = subscribeToAuthState((currentUser) => {
+        setUser(currentUser);
+        setLoading(false);
+      });
+      return () => unsubscribe();
+    } catch (err) {
+      console.error("Auth state listener error:", err);
       setLoading(false);
-    });
-    return () => unsubscribe();
+    }
   }, []);
 
   const register = async (name: string, email: string, pass: string) => {
